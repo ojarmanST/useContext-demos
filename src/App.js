@@ -1,24 +1,28 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { createContext, useContext, useState } from "react";
+
 const ThemeContext = createContext(null);
+const CurrentUserContext = createContext(null);
 
 export default function App() {
   const [theme, setTheme] = useState("light");
+  const [currentUser, setCurrentUser] = useState(null);
 
   return (
     <ThemeContext.Provider value={theme}>
-      <Form />
-      <label>
-        <input
-          type="checkbox"
-          checked={theme === "dark"}
-          onChange={(e) => {
-            setTheme(e.target.checked ? "dark" : "light");
-          }}
-        />
-        Use dark mode
-      </label>
+      <CurrentUserContext.Provider value={{ currentUser, setCurrentUser }}>
+        <Form />
+        <label>
+          <input
+            type="checkbox"
+            checked={theme === "dark"}
+            onChange={(e) => {
+              setTheme(e.target.checked ? "dark" : "light");
+            }}
+          />
+          Use dark mode
+        </label>
+      </CurrentUserContext.Provider>
     </ThemeContext.Provider>
   );
 }
@@ -27,7 +31,7 @@ function Form({ children }) {
   return (
     <Panel title="Welcome">
       <Button>Sign up</Button>
-      <Button>Log in</Button>
+      <LoginButton />
     </Panel>
   );
 }
@@ -43,8 +47,30 @@ function Panel({ title, children }) {
   );
 }
 
-function Button({ children }) {
+function Button({ children, onClick }) {
   const theme = useContext(ThemeContext);
   const className = "button-" + theme;
-  return <button className={className}>{children}</button>;
+  return (
+    <button className={className} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function LoginButton() {
+  const { currentUser, setCurrentUser } = useContext(CurrentUserContext);
+
+  if (currentUser !== null) {
+    return <p>You logged in as {currentUser.name}.</p>;
+  }
+
+  return (
+    <Button
+      onClick={() => {
+        setCurrentUser({ name: "Olivia" });
+      }}
+    >
+      Log in as Olivia
+    </Button>
+  );
 }
