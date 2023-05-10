@@ -8,10 +8,13 @@ export default function App() {
   const [theme, setTheme] = useState("light");
   const [currentUser, setCurrentUser] = useState(null);
 
+  /**In this example, there are two independent contexts.
+   * ThemeContext provides the current theme, which is a string,
+   * while CurrentUserContext holds the object representing the current user. */
   return (
     <ThemeContext.Provider value={theme}>
       <CurrentUserContext.Provider value={{ currentUser, setCurrentUser }}>
-        <Form />
+        <WelcomePanel />
         <label>
           <input
             type="checkbox"
@@ -27,12 +30,55 @@ export default function App() {
   );
 }
 
-function Form({ children }) {
+function WelcomePanel({ children }) {
+  const { currentUser } = useContext(CurrentUserContext);
   return (
     <Panel title="Welcome">
-      <Button>Sign up</Button>
-      <LoginButton />
+      {currentUser !== null ? <Greeting /> : <LoginForm />}
     </Panel>
+  );
+}
+
+function Greeting() {
+  const { currentUser } = useContext(CurrentUserContext);
+  return <p>You logged in as {currentUser.name}.</p>;
+}
+
+function LoginForm() {
+  const { setCurrentUser } = useContext(CurrentUserContext);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const canLogin = firstName !== "" && lastName !== "";
+  return (
+    <>
+      <label>
+        First name{": "}
+        <input
+          required
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+      </label>
+      <label>
+        Last name{": "}
+        <input
+          required
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+      </label>
+      <Button
+        disabled={!canLogin}
+        onClick={() => {
+          setCurrentUser({
+            name: firstName + " " + lastName,
+          });
+        }}
+      >
+        Log in
+      </Button>
+      {!canLogin && <i>Fill in both fields.</i>}
+    </>
   );
 }
 
@@ -47,11 +93,11 @@ function Panel({ title, children }) {
   );
 }
 
-function Button({ children, onClick }) {
+function Button({ children, disabled, onClick }) {
   const theme = useContext(ThemeContext);
   const className = "button-" + theme;
   return (
-    <button className={className} onClick={onClick}>
+    <button className={className} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
